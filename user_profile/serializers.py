@@ -27,11 +27,11 @@ class RegisterSerializer(serializers.Serializer):
         validated_data.pop('password_confirm')
 
         user = User.objects.create_user(**validated_data)
+
         user.set_password(password)
         user.save()
 
         return user
-
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -56,3 +56,10 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         return response_data
 
 
+class PasswordResetSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate_email(self, value):
+        if not User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("Пользователь с таким email не найден.")
+        return value
