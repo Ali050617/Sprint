@@ -1,4 +1,7 @@
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, AuthUser
+from rest_framework_simplejwt.tokens import Token
+
 from .models import User
 
 
@@ -29,3 +32,21 @@ class RegisterSerializer(serializers.Serializer):
         user.save()
 
         return user
+
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+
+        token['id'] = user.id
+        token['email'] = user.email
+        token['username'] = user.username
+        token['is_active'] = user.is_active
+        token['is_staff'] = user.is_staff
+        token['is_verified'] = user.is_verified
+        token['date_joined'] = user.date_joined
+        token['role'] = user.role
+
+        return token
+
