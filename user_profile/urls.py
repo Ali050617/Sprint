@@ -11,5 +11,9 @@ urlpatterns = [
     path('auth/password-reset/', views.PasswordResetView.as_view(), name='password-reset'),
     path('auth/password-reset/confirm/', views.PasswordResetConfirmView.as_view(), name='password-reset-confirm'),
 
-    path('users/me/', views.UserDataView.as_view(), name='user-profile'),
+    path('users/me/', views.UserDataView.as_view(), name='user'),
+
+    path('profiles/<str:username>/', views.UserProfileView.as_view(), name='user-profile'),
+
+
 ]

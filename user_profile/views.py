@@ -1,4 +1,5 @@
 from tokenize import TokenError
+from django.shortcuts import get_object_or_404
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -6,13 +7,13 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
-from .models import User
+from .models import User, UserProfile
 from .serializers import (
     RegisterSerializer,
     CustomTokenObtainPairSerializer,
     PasswordResetSerializer,
     PasswordResetConfirmSerializer,
-    UserDataSerializer
+    UserDataSerializer, UserProfileSerializer
 )
 
 
@@ -82,7 +83,6 @@ class PasswordResetView(APIView):
         user = User.objects.get(email=email)
         user.generate_email_token()
 
-
         return Response({"detail": "Ссылка для сброса пароля отправлена на почту."})
 
 
@@ -112,3 +112,13 @@ class UserDataView(generics.RetrieveAPIView):
 
     def get_object(self):
         return self.request.user
+
+
+class UserProfileView(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserProfileSerializer
+
+    def get_object(self):
+        username = self.kwargs.get('username')
+        user = get_object_or_404(User, username=username)
+        return get_object_or_404(UserProfile, user=user)
