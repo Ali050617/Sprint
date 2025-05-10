@@ -80,3 +80,22 @@ class PasswordResetView(APIView):
 
         return Response({"detail": "Ссылка для сброса пароля отправлена на почту."})
 
+
+class PasswordResetConfirmView(APIView):
+    def post(self, request):
+        serializer = PasswordResetConfirmSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        token = serializer.validated_data['token']
+        password = serializer.validated_data['password']
+
+        try:
+            user = User.objects.get(email_token=token)
+        except User.DoesNotExist:
+            raise ValidationError({"detail": "Неверный токен."})
+
+        user.set_password(password)
+        user.email_token = None
+        user.save()
+
+        return Response({"detail": "Пароль успешно изменён."})
