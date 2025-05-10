@@ -27,15 +27,12 @@ class RegisterSerializer(serializers.Serializer):
         validated_data.pop('password_confirm')
 
         user = User.objects.create_user(**validated_data)
-
         user.set_password(password)
         user.save()
 
         return user
 
 
-class EmailVerificationSerializer(serializers.Serializer):
-    token = serializers.CharField()
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
