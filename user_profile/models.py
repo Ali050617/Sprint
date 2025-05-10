@@ -1,3 +1,20 @@
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-# Create your models here.
+
+class User(AbstractUser):
+    ROLE_CHOICES = [
+        ('admin', 'Admin'),
+        ('user', 'User')
+    ]
+
+    email = models.EmailField(unique=True)
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
+    is_verified = models.BooleanField(default=True)
+    date_joined = models.DateTimeField(auto_now_add=True)
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='user')
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username']
+
