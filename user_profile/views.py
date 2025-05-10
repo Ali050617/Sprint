@@ -7,9 +7,8 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
-
 from .models import User
-from .serializers import RegisterSerializer, CustomTokenObtainPairSerializer
+from .serializers import RegisterSerializer, CustomTokenObtainPairSerializer, PasswordResetSerializer, PasswordResetConfirmSerializer
 
 
 class UserRegisterViews(generics.CreateAPIView):
@@ -53,7 +52,8 @@ class UserLogoutView(APIView):
     def post(self, request):
         refresh_token = request.data.get('refresh')
         if not refresh_token:
-            return Response({
+            return Response(        # send_email(user.email, user.email_token)
+{
                 'detail': "Refresh token is required"
             }, status=400)
 
@@ -67,4 +67,16 @@ class UserLogoutView(APIView):
 
         return Response(status=204)
 
+
+class PasswordResetView(APIView):
+    def post(self, request):
+        serializer = PasswordResetSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data['email']
+
+        user = User.objects.get(email=email)
+        user.generate_email_token()
+
+
+        return Response({"detail": "Ссылка для сброса пароля отправлена на почту."})
 
