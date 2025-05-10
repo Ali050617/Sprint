@@ -35,18 +35,23 @@ class RegisterSerializer(serializers.Serializer):
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-    @classmethod
-    def get_token(cls, user):
-        token = super().get_token(user)
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        user_data = {
+            "id": self.user.id,
+            "email": self.user.email,
+            "username": self.user.username,
+            "is_active": self.user.is_active,
+            "is_staff": self.user.is_staff,
+            "is_verified": self.user.is_verified,
+            "date_joined": self.user.date_joined.isoformat(),
+            "role": self.user.role,
+        }
 
-        token['id'] = user.id
-        token['email'] = user.email
-        token['username'] = user.username
-        token['is_active'] = user.is_active
-        token['is_staff'] = user.is_staff
-        token['is_verified'] = user.is_verified
-        token['date_joined'] = user.date_joined
-        token['role'] = user.role
-
-        return token
+        response_data = {
+            "access": data['access'],
+            "refresh": data['refresh'],
+            "user": user_data
+        }
+        return response_data
 
