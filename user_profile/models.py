@@ -25,3 +25,13 @@ class User(AbstractUser):
         self.save()
 
 
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='user_profile')
+    bio = models.TextField(max_length=400)
+    image = models.ImageField(upload_to='users-photos/')
+    followers_count = models.PositiveIntegerField()
+    following_count = models.PositiveIntegerField()
+
+    def __str__(self):
+        return f'Профиль пользователя {self.user.email}'
+
