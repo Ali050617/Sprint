@@ -16,4 +16,9 @@ urlpatterns = [
 
     path('profiles/me/', views.UserRetrieveUpdateView.as_view(), name='user-profile-update'),
     path('profiles/<str:username>/', views.UserProfileView.as_view(), name='user-profile-view'),
+
+    path('profiles/<str:username>/follow/', views.FollowUserView.as_view(), name='user-follow'),
+    path('profiles/<str:username>/unfollow/', views.UnfollowUserView.as_view(), name='user-unfollow'),
+    path('profiles/<str:username>/followers/', views.FollowersListView.as_view(), name='user-followers'),
+    path('profiles/<str:username>/following/', views.FollowingListView.as_view(), name='user-following'),
 ]
