@@ -34,12 +34,12 @@ class PostSerializer(serializers.ModelSerializer):
                             'likes_count', 'comments_count']
 
 
-class LikeSerializer(serializers.ModelSerializer):
+class PostLikeSerializer(serializers.ModelSerializer):
     user = UserSerializer(source='author', read_only=True)
     class Meta:
         model = Post
         fields = ['id', 'user', 'created_at']
 
-class UnlikeSerializer(serializers.Serializer):
+class PostUnlikeSerializer(serializers.Serializer):
     detail = serializers.CharField()
     code = serializers.CharField()

@@ -2,7 +2,7 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from .models import Post
-from .serializers import PostSerializer, LikeSerializer, UnlikeSerializer
+from .serializers import PostSerializer, PostLikeSerializer, PostUnlikeSerializer
 
 
 class PostListCreateView(generics.ListCreateAPIView):
@@ -24,9 +24,9 @@ class PostRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
         instance.save()
 
 
-class LikeView(generics.GenericAPIView):
+class PostLikeView(generics.GenericAPIView):
     queryset = Post.objects.all()
-    serializer_class = LikeSerializer
+    serializer_class = PostLikeSerializer
 
     def post(self, request, *args, **kwargs):
         try:
@@ -39,9 +39,9 @@ class LikeView(generics.GenericAPIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class UnlikeView(generics.GenericAPIView):
+class PostUnlikeView(generics.GenericAPIView):
     queryset = Post.objects.all()
-    serializer_class = UnlikeSerializer
+    serializer_class = PostUnlikeSerializer
     def post(self, request, pk):
         try:
             post = self.get_object()
