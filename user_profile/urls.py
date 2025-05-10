@@ -8,5 +8,6 @@ urlpatterns = [
     path('auth/verify-email/', views.VerifyEmailView.as_view(), name='verify-email'),
     path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('auth/logout/', views.UserLogoutView.as_view(), name='user-logout'),
-
+    path('auth/password-reset/', views.PasswordResetView.as_view(), name='password-reset'),
+    path('auth/password-reset/confirm/', views.PasswordResetConfirmView.as_view(), name='password-reset-confirm'),
 ]
