@@ -1,8 +1,7 @@
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, AuthUser
-from rest_framework_simplejwt.tokens import Token
 
-from .models import User
+from .models import User, UserProfile
 
 
 class RegisterSerializer(serializers.Serializer):
@@ -87,19 +86,21 @@ class UserDataSerializer(serializers.Serializer):
     role = serializers.CharField(read_only=True)
 
 
-class UserProfileSerializer(serializers.Serializer):
-    id = serializers.IntegerField(read_only=True)
+class UserProfileSerializer(serializers.ModelSerializer):
     user = UserDataSerializer(read_only=True)
-    bio = serializers.CharField(read_only=True)
-    image = serializers.SerializerMethodField()
     followers_count = serializers.SerializerMethodField()
     following_count = serializers.SerializerMethodField()
 
-    def get_image(self, obj):
-        request = self.context.get('request')
-        if obj.image and hasattr(obj.image, 'url'):
-            return request.build_absolute_uri(obj.image.url) if request else obj.image.url
-        return None
+    class Meta:
+        model = UserProfile
+        fields = [
+            'id',
+            'user',
+            'bio',
+            'image',
+            'followers_count',
+            'following_count'
+        ]
 
     def get_followers_count(self, obj):
         return obj.followers.count()

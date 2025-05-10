@@ -122,3 +122,12 @@ class UserProfileView(generics.RetrieveAPIView):
         username = self.kwargs.get('username')
         user = get_object_or_404(User, username=username)
         return get_object_or_404(UserProfile, user=user)
+
+
+class UserRetrieveUpdateView(generics.RetrieveUpdateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserProfileSerializer
+
+    def get_object(self):
+        profile, _ = UserProfile.objects.get_or_create(user=self.request.user)
+        return profile
