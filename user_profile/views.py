@@ -1,5 +1,4 @@
 from tokenize import TokenError
-
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -8,7 +7,13 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .models import User
-from .serializers import RegisterSerializer, CustomTokenObtainPairSerializer, PasswordResetSerializer, PasswordResetConfirmSerializer
+from .serializers import (
+    RegisterSerializer,
+    CustomTokenObtainPairSerializer,
+    PasswordResetSerializer,
+    PasswordResetConfirmSerializer,
+    UserDataSerializer
+)
 
 
 class UserRegisterViews(generics.CreateAPIView):
@@ -99,3 +104,11 @@ class PasswordResetConfirmView(APIView):
         user.save()
 
         return Response({"detail": "Пароль успешно изменён."})
+
+
+class UserDataView(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserDataSerializer
+
+    def get_object(self):
+        return self.request.user

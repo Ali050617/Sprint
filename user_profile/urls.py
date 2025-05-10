@@ -10,4 +10,6 @@ urlpatterns = [
     path('auth/logout/', views.UserLogoutView.as_view(), name='user-logout'),
     path('auth/password-reset/', views.PasswordResetView.as_view(), name='password-reset'),
     path('auth/password-reset/confirm/', views.PasswordResetConfirmView.as_view(), name='password-reset-confirm'),
+
+    path('users/me/', views.UserDataView.as_view(), name='user-profile'),
 ]
