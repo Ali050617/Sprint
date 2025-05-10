@@ -34,6 +34,9 @@ class RegisterSerializer(serializers.Serializer):
         return user
 
 
+class EmailVerificationSerializer(serializers.Serializer):
+    token = serializers.CharField()
+
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         data = super().validate(attrs)
@@ -54,4 +57,5 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             "user": user_data
         }
         return response_data
+
 
