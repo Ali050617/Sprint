@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from .models import User
 
 
 class RegisterSerializer(serializers.Serializer):
@@ -19,13 +20,12 @@ class RegisterSerializer(serializers.Serializer):
         return data
 
     def create(self, validated_data):
-        from django.contrib.auth import get_user_model
-        User = get_user_model()
-
+        password = validated_data.pop('password')
         validated_data.pop('password_confirm')
-        user = User.objects.create_user(
-            username=validated_data['username'],
-            email=validated_data['email'],
-            password=validated_data['password']
-        )
+
+        user = User.objects.create_user(**validated_data)
+
+        user.set_password(password)
+        user.save()
+
         return user
