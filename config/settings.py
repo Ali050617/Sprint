@@ -32,7 +32,6 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -136,13 +135,7 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10,
 }
 
-JAZZMIN_UI_TWEAKS = {
-    "theme": "superhero ",
-    "dark_mode_theme": "cyborg"
-}
-JAZZMIN_SETTINGS = {
-    "site_brand": "Admin-panel",
-}
+
 
 AUTH_USER_MODEL = 'user_profile.User'
 
