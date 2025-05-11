@@ -32,6 +32,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -129,6 +130,19 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
+}
+
+JAZZMIN_UI_TWEAKS = {
+    "theme": "superhero ",
+    "dark_mode_theme": "cyborg"
+}
+JAZZMIN_SETTINGS = {
+    "site_brand": "Admin-panel",
+}
 
 AUTH_USER_MODEL = 'user_profile.User'
 
