@@ -5,7 +5,6 @@ from user_profile.models import User
 
 
 class UserAccountTests(APITestCase):
-
     def setUp(self):
         self.register_url = reverse('user-register')
         self.login_url = reverse('user-login')
@@ -25,7 +24,6 @@ class UserAccountTests(APITestCase):
         self.assertTrue(User.objects.filter(email="user@example.com").exists())
 
     def test_login_user(self):
-        # Avval ro'yxatdan o'tkazamiz
         self.client.post(self.register_url, self.user_data)
         user = User.objects.get(email="user@example.com")
         user.is_verified = True
@@ -68,3 +66,85 @@ class UserAccountTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         user.refresh_from_db()
         self.assertIsNotNone(user.email_token)
+
+
+
+# FOLLOW TEST
+
+class UserFollowAPITest(APITestCase):
+    def setUp(self):
+        self.user1_data = {
+            "email": "user1@example.com",
+            "username": "user1",
+            "password": "testpass123",
+            "password_confirm": "testpass123"
+        }
+
+        self.user2_data = {
+            "email": "user2@example.com",
+            "username": "user2",
+            "password": "testpass123",
+            "password_confirm": "testpass123"
+        }
+
+        # Ro‘yxatdan o‘tish
+        self.client.post(reverse('user-register'), self.user1_data)
+        self.client.post(reverse('user-register'), self.user2_data)
+
+        self.user1 = User.objects.get(email=self.user1_data['email'])
+        self.user2 = User.objects.get(email=self.user2_data['email'])
+
+        self.user1.is_verified = True
+        self.user2.is_verified = True
+        self.user1.save()
+        self.user2.save()
+
+        response = self.client.post(reverse('user-login'), {
+            "email": self.user1_data["email"],
+            "password": self.user1_data["password"]
+        })
+        self.access_token = response.data['access']
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.access_token}")
+
+    def test_email_verification(self):
+        self.user1.is_verified = False
+        self.user1.generate_email_token()
+        self.user1.save()
+
+        url = reverse("verify-email")
+        response = self.client.post(url, {"token": self.user1.email_token})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.user1.refresh_from_db()
+        self.assertTrue(self.user1.is_verified)
+
+    def test_follow_user(self):
+        url = reverse("user-follow", kwargs={"username": self.user2.username})
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(self.user2.user_profile in self.user1.user_profile.following.all())
+
+    def test_unfollow_user(self):
+        follow_url = reverse("user-follow", kwargs={"username": self.user2.username})
+        self.client.post(follow_url)
+
+        unfollow_url = reverse("user-unfollow", kwargs={"username": self.user2.username})
+        response = self.client.post(unfollow_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertFalse(self.user2.user_profile in self.user1.user_profile.following.all())
+
+    def test_followers_list(self):
+        self.client.post(reverse("user-follow", kwargs={"username": self.user2.username}))
+        url = reverse("user-followers", kwargs={"username": self.user2.username})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data['results'][0]['user']['username'], self.user1.username)
+
+    def test_following_list(self):
+        self.client.post(reverse("user-follow", kwargs={"username": self.user2.username}))
+        url = reverse("user-following", kwargs={"username": self.user1.username})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data['results'][0]['user']['username'], self.user2.username)
+

@@ -9,7 +9,6 @@ class UserAdmin(BaseUserAdmin):
     list_display = ('email', 'username', 'role', 'is_verified', 'is_active', 'is_staff')
     list_filter = ('role', 'is_verified', 'is_active', 'is_staff')
     search_fields = ('email', 'username')
-    ordering = ('-date_joined',)
 
 
 @admin.register(UserProfile)
