@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, AuthUser
-
 from .models import User, UserProfile
 
 
@@ -62,8 +61,6 @@ class PasswordResetSerializer(serializers.Serializer):
         if not User.objects.filter(email=value).exists():
             raise serializers.ValidationError("Пользователь с таким email не найден.")
         return value
-
-
 
 
 class PasswordResetConfirmSerializer(serializers.Serializer):
