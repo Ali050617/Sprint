@@ -87,7 +87,6 @@ class UserFollowAPITest(APITestCase):
             "password_confirm": "testpass123"
         }
 
-        # Ro‘yxatdan o‘tish
         self.client.post(reverse('user-register'), self.user1_data)
         self.client.post(reverse('user-register'), self.user2_data)
 
