@@ -64,6 +64,8 @@ class PasswordResetSerializer(serializers.Serializer):
         return value
 
 
+
+
 class PasswordResetConfirmSerializer(serializers.Serializer):
     token = serializers.CharField()
     password = serializers.CharField(write_only=True)
