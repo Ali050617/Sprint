@@ -1,5 +1,6 @@
 from rest_framework import generics, status
 from rest_framework.response import Response
+from rest_framework import status
 from django.db.models import Q
 from posts.models import Post
 from comments.models import Comment
@@ -26,10 +27,13 @@ class SearchView(generics.GenericAPIView):
                 "users": {"count": 0, "next": None, "previous": None, "results": []}
             }, status=status.HTTP_200_OK)
 
-        # Validate search type
+        # Valid search types
         valid_types = ['post', 'comment', 'user', 'all']
         if search_type not in valid_types:
             search_type = 'all'
+
+        # Initialize pagination
+        paginator = SearchPagination()
 
         # Initialize response data
         response_data = {
