@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
+
+from user_profile.serializers import UserDataSerializer
 from .models import Post
 
 
@@ -24,7 +26,8 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class PostSerializer(serializers.ModelSerializer):
-    author = UserSerializer(read_only=True)
+    author = UserDataSerializer(read_only=True)
+    likes_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
@@ -32,6 +35,9 @@ class PostSerializer(serializers.ModelSerializer):
                   'updated_at', 'is_active', 'likes_count', 'comments_count']
         read_only_fields = ['author', 'created_at', 'updated_at',
                             'likes_count', 'comments_count']
+
+    def get_likes_count(self, obj):
+        return obj.likes.count()
 
 
 class PostLikeSerializer(serializers.ModelSerializer):

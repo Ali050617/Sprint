@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404
 from posts.models import Post
 from .models import Comment
 from .serializers import CommentSerializer, CommentUnlikeSerializer, CommentLikeSerializer
+from notifications.utils import create_notification
 
 
 class PostCommentListCreateAPIView(generics.ListCreateAPIView):
@@ -25,24 +26,36 @@ class CommentRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView)
     serializer_class = CommentSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
 
-
 class CommentLikeView(generics.GenericAPIView):
-    queryset = Post.objects.all()
+    queryset = Comment.objects.all()
     serializer_class = CommentLikeSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def post(self, request, *args, **kwargs):
         try:
-            post = self.get_object()
-        except Post.DoesNotExist:
-            return Response({"detail": "Post not found"}, status=status.HTTP_404_NOT_FOUND)
-        post.likes_count += 1
-        post.save()
-        serializer = self.get_serializer(post)
+            comment = self.get_object()
+        except Comment.DoesNotExist:
+            return Response({"detail": "Comment not found", "code": "404"}, status=status.HTTP_404_NOT_FOUND)
+        if request.user in comment.likes.all():
+            return Response({"detail": "You already liked this comment", "code": "400"},
+                            status=status.HTTP_400_BAD_REQUEST)
+        comment.likes.add(request.user)
+        comment.likes_count = comment.likes.count()
+        comment.save()
+
+        if comment.author != request.user:
+            create_notification(
+                recipient=comment.author,
+                actor=request.user,
+                verb='liked',
+                target_type='comment',
+                target_id=comment.id
+            )
+        serializer = CommentLikeSerializer(comment)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-
 class CommentUnlikeView(generics.GenericAPIView):
-    queryset = Post.objects.all()
+    queryset = Comment.objects.all()
     serializer_class = CommentUnlikeSerializer
     def post(self, request, pk):
         try:

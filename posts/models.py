@@ -11,6 +11,13 @@ class Post(models.Model):
     comments_count = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    likes = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='liked_posts', blank=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['title']),
+            models.Index(fields=['content']),
+        ]
 
     def __str__(self):
         return self.title

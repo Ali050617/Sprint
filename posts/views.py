@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from .models import Post
 from .serializers import PostSerializer, PostLikeSerializer, PostUnlikeSerializer
+from notifications.utils import create_notification
 
 
 class PostListCreateView(generics.ListCreateAPIView):
@@ -27,14 +28,26 @@ class PostRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
 class PostLikeView(generics.GenericAPIView):
     queryset = Post.objects.all()
     serializer_class = PostLikeSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def post(self, request, *args, **kwargs):
         try:
             post = self.get_object()
         except Post.DoesNotExist:
-            return Response({"detail": "Post not found"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": "Post not found", "code": "404"}, status=status.HTTP_404_NOT_FOUND)
         post.likes_count += 1
         post.save()
+
+        # Create notification for post like
+        if post.author != request.user:
+            create_notification(
+                recipient=post.author,
+                actor=request.user,
+                verb='liked',
+                target_type='post',
+                target_id=post.id
+            )
+
         serializer = self.get_serializer(post)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
