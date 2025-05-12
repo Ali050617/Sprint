@@ -62,3 +62,23 @@ class CommentUnlikeSerializer(serializers.Serializer):
     code = serializers.CharField()
 
 
+class SimplePostSerializer(serializers.ModelSerializer):
+    author = UserDataSerializer(read_only=True)
+
+    class Meta:
+        model = Post
+        fields = ['id', 'title', 'content', 'author', 'created_at', 'updated_at', 'is_active']
+
+
+class SearchCommentSerializer(serializers.ModelSerializer):
+    author = UserDataSerializer(read_only=True)
+    post = SimplePostSerializer(read_only=True)
+    likes_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Comment
+        fields = ['id', 'content', 'author', 'post', 'created_at',
+                  'updated_at', 'is_active', 'likes_count']
+
+    def get_likes_count(self, obj):
+        return obj.likes.count()
