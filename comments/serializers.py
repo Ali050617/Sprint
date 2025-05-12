@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from django.contrib.auth import get_user_model
 from posts.models import Post
 from user_profile.serializers import UserDataSerializer
 from .models import Comment
@@ -42,7 +41,6 @@ class CommentSerializer(serializers.ModelSerializer):
     author = UserDataSerializer(read_only=True)
     post = PostSerializer(read_only=True)
     likes_count = serializers.SerializerMethodField()
-    User = get_user_model()
 
     class Meta:
         model = Comment
