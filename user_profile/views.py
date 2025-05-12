@@ -52,6 +52,7 @@ class VerifyEmailAPIView(generics.GenericAPIView):
         return Response({"detail": "Email успешно подтвержден"}, status=status.HTTP_200_OK)
 
 
+
 # LOGIN
 class UserLoginView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
