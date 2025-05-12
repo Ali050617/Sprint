@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from posts.models import Post
 from user_profile.serializers import UserDataSerializer
 from .models import Comment
+from django.contrib.auth import get_user_model
 
 class UserSerializer(serializers.ModelSerializer):
     is_verified = serializers.SerializerMethodField()
@@ -39,6 +40,7 @@ class CommentSerializer(serializers.ModelSerializer):
     author = UserDataSerializer(read_only=True)
     post = PostSerializer(read_only=True)
     likes_count = serializers.SerializerMethodField()
+    User = get_user_model()
 
     class Meta:
         model = Comment
@@ -58,3 +60,25 @@ class CommentLikeSerializer(serializers.ModelSerializer):
 class CommentUnlikeSerializer(serializers.Serializer):
     detail = serializers.CharField()
     code = serializers.CharField()
+
+
+class SimplePostSerializer(serializers.ModelSerializer):
+    author = UserDataSerializer(read_only=True)
+
+    class Meta:
+        model = Post
+        fields = ['id', 'title', 'content', 'author', 'created_at', 'updated_at', 'is_active']
+
+
+class SearchCommentSerializer(serializers.ModelSerializer):
+    author = UserDataSerializer(read_only=True)
+    post = SimplePostSerializer(read_only=True)
+    likes_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Comment
+        fields = ['id', 'content', 'author', 'post', 'created_at',
+                  'updated_at', 'is_active', 'likes_count']
+
+    def get_likes_count(self, obj):
+        return obj.likes.count()
