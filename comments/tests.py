@@ -1,8 +1,9 @@
 from django.test import TestCase
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from posts.models import Post
 from comments.models import Comment
 
+User = get_user_model()
 
 class CommentModelTest(TestCase):
     def setUp(self):
