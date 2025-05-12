@@ -1,19 +1,20 @@
-from rest_framework.views import APIView
+from rest_framework import generics, status
 from rest_framework.response import Response
-from rest_framework import status
 from django.db.models import Q
 from posts.models import Post
 from comments.models import Comment
 from user_profile.models import UserProfile
 from posts.serializers import PostSerializer
-from comments.serializers import CommentSerializer
+from comments.serializers import CommentSerializer, SearchCommentSerializer
 from user_profile.serializers import UserProfileSerializer
 from .paginations import SearchPagination
 import logging
 
 logger = logging.getLogger(__name__)
 
-class SearchView(APIView):
+class SearchView(generics.GenericAPIView):
+    pagination_class = SearchPagination
+
     def get(self, request):
         query = request.query_params.get('q', '').strip()
         search_type = request.query_params.get('type', 'all').lower()
@@ -25,10 +26,12 @@ class SearchView(APIView):
                 "users": {"count": 0, "next": None, "previous": None, "results": []}
             }, status=status.HTTP_200_OK)
 
+        # Validate search type
         valid_types = ['post', 'comment', 'user', 'all']
         if search_type not in valid_types:
             search_type = 'all'
 
+        # Initialize response data
         response_data = {
             "posts": {"count": 0, "next": None, "previous": None, "results": []},
             "comments": {"count": 0, "next": None, "previous": None, "results": []},
@@ -37,62 +40,53 @@ class SearchView(APIView):
 
         # Search posts
         if search_type in ['post', 'all']:
-            posts = Post.objects.filter(
+            posts_queryset = Post.objects.filter(
                 Q(title__icontains=query) | Q(content__icontains=query),
                 is_active=True
             )
-            logger.info(f"Found {posts.count()} posts for query '{query}'")
-
-            post_paginator = SearchPagination()
-            paginated_posts = post_paginator.paginate_queryset(posts, request)
-            post_serializer = PostSerializer(paginated_posts, many=True)
-
-            response_data['posts'] = {
-                "count": post_paginator.page.paginator.count,
-                "next": post_paginator.get_next_link(),
-                "previous": post_paginator.get_previous_link(),
-                "results": post_serializer.data
+            posts_paginator = self.pagination_class()
+            posts_page = posts_paginator.paginate_queryset(posts_queryset, request)
+            posts_serializer = PostSerializer(posts_page, many=True)
+            response_data["posts"] = {
+                "count": posts_paginator.page.paginator.count,
+                "next": posts_paginator.get_next_link(),
+                "previous": posts_paginator.get_previous_link(),
+                "results": posts_serializer.data
             }
+            logger.info(f"Found {posts_queryset.count()} posts for query '{query}'")
 
         # Search comments
         if search_type in ['comment', 'all']:
-            comments = Comment.objects.filter(
-                Q(content__icontains=query) |
-                Q(post__title__icontains=query) |
-                Q(author__username__icontains=query),
+            comments_queryset = Comment.objects.filter(
+                Q(content__icontains=query) | Q(post__title__icontains=query) | Q(author__username__icontains=query),
                 is_active=True
-            )
-            logger.info(f"Found {comments.count()} comments for query '{query}'")
-
-            comment_paginator = SearchPagination()
-            paginated_comments = comment_paginator.paginate_queryset(comments, request)
-            comment_serializer = CommentSerializer(paginated_comments, many=True)
-
-            response_data['comments'] = {
-                "count": comment_paginator.page.paginator.count,
-                "next": comment_paginator.get_next_link(),
-                "previous": comment_paginator.get_previous_link(),
-                "results": comment_serializer.data
+            ).select_related('post', 'author')
+            comments_paginator = self.pagination_class()
+            comments_page = comments_paginator.paginate_queryset(comments_queryset, request)
+            # Use simplified comment serializer for search
+            comments_serializer = SearchCommentSerializer(comments_page, many=True)
+            response_data["comments"] = {
+                "count": comments_paginator.page.paginator.count,
+                "next": comments_paginator.get_next_link(),
+                "previous": comments_paginator.get_previous_link(),
+                "results": comments_serializer.data
             }
+            logger.info(f"Found {comments_queryset.count()} comments for query '{query}'")
 
         # Search users (UserProfile)
         if search_type in ['user', 'all']:
-            user_profiles = UserProfile.objects.filter(
-                Q(user__username__icontains=query) |
-                Q(bio__icontains=query) |
-                Q(user__email__icontains=query)
-            )
-            logger.info(f"Found {user_profiles.count()} users for query '{query}'")
-
-            user_paginator = SearchPagination()
-            paginated_users = user_paginator.paginate_queryset(user_profiles, request)
-            user_serializer = UserProfileSerializer(paginated_users, many=True)
-
-            response_data['users'] = {
-                "count": user_paginator.page.paginator.count,
-                "next": user_paginator.get_next_link(),
-                "previous": user_paginator.get_previous_link(),
-                "results": user_serializer.data
+            users_queryset = UserProfile.objects.filter(
+                Q(user__username__icontains=query) | Q(bio__icontains=query) | Q(user__email__icontains=query)
+            ).select_related('user')
+            users_paginator = self.pagination_class()
+            users_page = users_paginator.paginate_queryset(users_queryset, request)
+            users_serializer = UserProfileSerializer(users_page, many=True)
+            response_data["users"] = {
+                "count": users_paginator.page.paginator.count,
+                "next": users_paginator.get_next_link(),
+                "previous": users_paginator.get_previous_link(),
+                "results": users_serializer.data
             }
+            logger.info(f"Found {users_queryset.count()} users for query '{query}'")
 
         return Response(response_data, status=status.HTTP_200_OK)
