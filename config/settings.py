@@ -41,11 +41,11 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
-    'user_profile',
+    'notifications.apps.NotificationsConfig',
+    'user_profile.apps.UserProfileConfig',
     'posts',
     'comments',
-    'search',
-    'notifications',
+    'search.apps.SearchConfig',
 ]
 
 MIDDLEWARE = [
