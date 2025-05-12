@@ -7,6 +7,7 @@ from .models import User, UserProfile
 from django.utils.crypto import get_random_string
 from django.core.mail import send_mail
 from django.conf import settings
+from .utils import send_verification_email
 
 
 @receiver(post_save, sender=User)
@@ -33,6 +34,13 @@ def send_verification_email_on_create(sender, instance, created, **kwargs):
             recipient_list=[instance.email],
             fail_silently=False,
         )
+
+
+@receiver(post_save, sender=User)
+def send_email_verification_signal(sender, instance, created, **kwargs):
+    if created and not instance.is_verified:
+        instance.generate_email_token()
+        send_verification_email(instance)
 
 
 @receiver(post_delete, sender=UserProfile)
