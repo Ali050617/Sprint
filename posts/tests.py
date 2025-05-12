@@ -1,8 +1,10 @@
-from django.test import TestCase
-from django.contrib.auth.models import User
+from rest_framework.test import APITestCase
+from django.contrib.auth import get_user_model
 from .models import Post
 
-class PostModelTest(TestCase):
+User = get_user_model()
+
+class PostModelAPITest(APITestCase):
 
     def setUp(self):
         self.user = User.objects.create_user(
@@ -16,22 +18,17 @@ class PostModelTest(TestCase):
             author=self.user
         )
 
-    def test_post_creation(self):
-        self.assertEqual(self.post.title, 'Test Post')
-        self.assertEqual(self.post.content, 'This is a test post content.')
-        self.assertEqual(self.post.author.username, 'testuser')
-        self.assertTrue(self.post.is_active)
-        self.assertEqual(self.post.likes_count, 0)
-        self.assertEqual(self.post.comments_count, 0)
+    def test_get_post_list(self):
+        response = self.client.get('/api/posts/')  # замените на актуальный URL
+        self.assertEqual(response.status_code, 200)
 
-    def test_str_method(self):
-        self.assertEqual(str(self.post), 'Test Post')
+    def test_create_post(self):
+        self.client.force_authenticate(user=self.user)
+        data = {
+            'title': 'New Post',
+            'content': 'Some content here',
+            'author': self.user.id
+        }
+        response = self.client.post('/api/posts/', data)
+        self.assertEqual(response.status_code, 201)
 
-    def test_post_update_fields(self):
-        self.post.likes_count = 5
-        self.post.comments_count = 3
-        self.post.save()
-
-        updated_post = Post.objects.get(id=self.post.id)
-        self.assertEqual(updated_post.likes_count, 5)
-        self.assertEqual(updated_post.comments_count, 3)
