@@ -86,7 +86,7 @@ class UserDataSerializer(serializers.Serializer):
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
-    user = UserDataSerializer(read_only=True)
+    user = UserDataSerializer(source='user', read_only=True)
     followers_count = serializers.SerializerMethodField()
     following_count = serializers.SerializerMethodField()
 
