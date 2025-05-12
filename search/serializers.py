@@ -11,8 +11,8 @@ class SearchCommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = ['id', 'content', 'author', 'post', 'created_at',
-                  'updated_at', 'is_active', 'likes_count']
+        fields = ('id', 'content', 'author', 'post', 'created_at',
+                  'updated_at', 'is_active', 'likes_count')
 
     def get_likes_count(self, obj):
         return obj.likes.count()

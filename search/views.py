@@ -6,12 +6,14 @@ from posts.models import Post
 from comments.models import Comment
 from user_profile.models import UserProfile
 from posts.serializers import PostSerializer
-from comments.serializers import CommentSerializer
+from .serializers import SearchCommentSerializer
 from user_profile.serializers import UserProfileSerializer
 from .paginations import SearchPagination
 import logging
 
+
 logger = logging.getLogger(__name__)
+
 
 class SearchView(APIView):
     def get(self, request):
@@ -66,7 +68,7 @@ class SearchView(APIView):
 
             comment_paginator = SearchPagination()
             paginated_comments = comment_paginator.paginate_queryset(comments, request)
-            comment_serializer = CommentSerializer(paginated_comments, many=True)
+            comment_serializer = SearchCommentSerializer(paginated_comments, many=True)
 
             response_data['comments'] = {
                 "count": comment_paginator.page.paginator.count,
