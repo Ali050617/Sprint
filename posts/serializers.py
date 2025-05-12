@@ -44,3 +44,14 @@ class PostUnlikeSerializer(serializers.Serializer):
     detail = serializers.CharField()
     code = serializers.CharField()
 
+
+
+
+
+
+
+
+
+
+
+
