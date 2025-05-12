@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework import status
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .models import User, UserProfile
 from .paginations import FollowersListPagination, FollowingListPagination
@@ -14,10 +15,11 @@ from .serializers import (
     CustomTokenObtainPairSerializer,
     PasswordResetSerializer,
     PasswordResetConfirmSerializer,
-    UserDataSerializer, UserProfileSerializer
+    UserDataSerializer, UserProfileSerializer, VerifyEmailSerializer
 )
 
 
+# REGISTER
 class UserRegisterViews(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = RegisterSerializer
@@ -29,30 +31,33 @@ class UserRegisterViews(generics.CreateAPIView):
         return user
 
 
+# VERIFY EMAIL
+class VerifyEmailAPIView(generics.GenericAPIView):
+    serializer_class = VerifyEmailSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        token = serializer.validated_data.get('token')
+        user = get_object_or_404(User, email_token=token)
+
+        if user.is_verified:
+            return Response({"detail": "Email уже подтвержден"}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.is_verified = True
+        user.email_token = None
+        user.save()
+
+        return Response({"detail": "Email успешно подтвержден"}, status=status.HTTP_200_OK)
+
+
+# LOGIN
 class UserLoginView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
 
-class VerifyEmailView(APIView):
-    def post(self, request, *args, **kwargs):
-        token = request.data.get("token")
-        if not token:
-            raise ValidationError({"detail": "Token is required."})
-
-        try:
-            user = User.objects.get(email_token=token)
-            if user.is_verified:
-                raise ValidationError({"detail": "Email already verified."})
-            user.is_verified = True
-            user.email_token = None
-            user.save()
-
-            return Response({"detail": "Email verified successfully."})
-        except User.DoesNotExist:
-            raise ValidationError({"detail": "Invalid token."})
-
-
-
+# LOGOUT
 class UserLogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -74,7 +79,7 @@ class UserLogoutView(APIView):
 
         return Response(status=204)
 
-
+# RESET PASSWORD
 class PasswordResetView(APIView):
     def post(self, request):
         serializer = PasswordResetSerializer(data=request.data)
@@ -87,6 +92,7 @@ class PasswordResetView(APIView):
         return Response({"detail": "Ссылка для сброса пароля отправлена на почту."})
 
 
+# CONFIRM RESET PASSWORD
 class PasswordResetConfirmView(APIView):
     def post(self, request):
         serializer = PasswordResetConfirmSerializer(data=request.data)
@@ -107,6 +113,7 @@ class PasswordResetConfirmView(APIView):
         return Response({"detail": "Пароль успешно изменён."})
 
 
+# USER
 class UserDataView(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = UserDataSerializer
@@ -115,6 +122,7 @@ class UserDataView(generics.RetrieveAPIView):
         return self.request.user
 
 
+# USER PROFILE
 class UserProfileView(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = UserProfileSerializer
@@ -125,6 +133,7 @@ class UserProfileView(generics.RetrieveAPIView):
         return get_object_or_404(UserProfile, user=user)
 
 
+# USER DETAIL
 class UserRetrieveUpdateView(generics.RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = UserProfileSerializer
@@ -133,7 +142,8 @@ class UserRetrieveUpdateView(generics.RetrieveUpdateAPIView):
         profile, _ = UserProfile.objects.get_or_create(user=self.request.user)
         return profile
 
-# FOLLOW
+
+# FOLLOWERS
 class FollowUserView(APIView):
     permission_classes = [IsAuthenticated]
 
