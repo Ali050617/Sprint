@@ -113,3 +113,21 @@ EMAIL_HOST_PASSWORD = 'clcqdwbnklubwnsq'
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        '': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+    },
+}
