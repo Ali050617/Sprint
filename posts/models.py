@@ -21,3 +21,12 @@ class Post(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class PostLike(models.Model):
+    post = models.ForeignKey('Post', on_delete=models.CASCADE, related_name='likes_data')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('post', 'user')

@@ -1,8 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-
 from user_profile.serializers import UserDataSerializer
-from .models import Post
+from .models import Post, PostLike
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -41,10 +40,12 @@ class PostSerializer(serializers.ModelSerializer):
 
 
 class PostLikeSerializer(serializers.ModelSerializer):
-    user = UserSerializer(source='author', read_only=True)
+    user = UserDataSerializer(read_only=True)
+
     class Meta:
-        model = Post
+        model = PostLike
         fields = ['id', 'user', 'created_at']
+
 
 class PostUnlikeSerializer(serializers.Serializer):
     detail = serializers.CharField()
