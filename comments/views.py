@@ -52,28 +52,27 @@ class CommentLikeView(generics.GenericAPIView):
         serializer = CommentLikeSerializer(comment)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
 class CommentUnlikeView(generics.GenericAPIView):
     queryset = Comment.objects.all()
     serializer_class = CommentUnlikeSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
 
-    def post(self, request, pk):
+    def post(self, request, *args, **kwargs):
         try:
             comment = self.get_object()
         except Comment.DoesNotExist:
-            error_data = {
-                "detail": "Comment not found",
-                "code": "404"
-            }
-            return Response(error_data, status=status.HTTP_404_NOT_FOUND)
-        if comment.likes_count > 0:
-            comment.likes.remove(request.user)
-            comment.likes_count = comment.likes.count()
-            comment.save()
-            return Response({"detail": "Successfully unliked", "code": "200"}, status=status.HTTP_200_OK)
-        else:
-            error_data = {
-                "detail": "Likes count is already 0",
+            return Response({"detail": "Comment not found", "code": "404"}, status=status.HTTP_404_NOT_FOUND)
+
+        if request.user not in comment.likes.all():
+            return Response({
+                "detail": "You haven't liked this comment yet",
                 "code": "400"
-            }
-            return Response(error_data, status=status.HTTP_400_BAD_REQUEST)
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        comment.likes.remove(request.user)
+        comment.likes_count = comment.likes.count()
+        comment.save()
+
+        return Response({"detail": "Successfully unliked", "code": "200"}, status=status.HTTP_200_OK)
+
