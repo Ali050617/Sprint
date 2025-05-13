@@ -20,8 +20,6 @@ from .serializers import (
     UserProfileSerializer, VerifyEmailSerializer,
 
 )
-from .tokens import send_password_reset_email, reset_password_confirm
-from .utils import reset_password_confirm
 
 
 # REGISTER
