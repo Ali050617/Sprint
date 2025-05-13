@@ -21,18 +21,23 @@ class UserSerializer(serializers.ModelSerializer):
     def get_role(self, obj):
         return 'admin' if obj.is_staff else 'user'
 
+
 class PostSerializer(serializers.ModelSerializer):
     author = UserDataSerializer(read_only=True)
-    likes = UserDataSerializer(many=True, read_only=True)
     likes_count = serializers.SerializerMethodField()
+    comments_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
         fields = ['id', 'title', 'content', 'author', 'created_at',
-                  'updated_at', 'is_active', 'likes_count', 'comments_count', 'likes']
+                  'updated_at', 'is_active', 'likes_count', 'comments_count', ]
 
     def get_likes_count(self, obj):
         return obj.likes.count()
+
+    def get_comments_count(self, obj):
+        return obj.comments.count()
+
 
 class CommentSerializer(serializers.ModelSerializer):
     author = UserDataSerializer(read_only=True)
@@ -50,9 +55,11 @@ class CommentSerializer(serializers.ModelSerializer):
 
 class CommentLikeSerializer(serializers.ModelSerializer):
     user = UserSerializer(source='author', read_only=True)
+
     class Meta:
         model = Comment
         fields = ['id', 'user', 'created_at']
+
 
 class CommentUnlikeSerializer(serializers.Serializer):
     detail = serializers.CharField()
