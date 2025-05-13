@@ -58,5 +58,3 @@ def delete_old_image_on_change(sender, instance, **kwargs):
     if old_image and old_image != new_image:
         if os.path.isfile(old_image.path):
             os.remove(old_image.path)
-
-

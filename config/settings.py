@@ -17,11 +17,11 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
-    'user_profile',
+    'notifications.apps.NotificationsConfig',
+    'user_profile.apps.UserProfileConfig',
     'posts',
     'comments',
-    'search',
-    'notifications',
+    'search.apps.SearchConfig',
 ]
 
 MIDDLEWARE = [
@@ -69,7 +69,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Tashkent'
 USE_I18N = True
 USE_TZ = True
 
@@ -87,8 +87,8 @@ REST_FRAMEWORK = {
 AUTH_USER_MODEL = 'user_profile.User'
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=7),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=14),
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': True,
     'AUTH_HEADER_TYPES': ('Bearer',),
@@ -105,3 +105,21 @@ EMAIL_HOST_PASSWORD = 'clcqdwbnklubwnsq'
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        '': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+    },
+}

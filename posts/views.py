@@ -1,7 +1,9 @@
 from rest_framework import generics, status
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
-from .models import Post
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
+from rest_framework.views import APIView
+
+from .models import Post, PostLike
 from .serializers import PostSerializer, PostLikeSerializer, PostUnlikeSerializer
 
 
@@ -24,40 +26,60 @@ class PostRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
         instance.save()
 
 
-class PostLikeView(generics.GenericAPIView):
-    queryset = Post.objects.all()
-    serializer_class = PostLikeSerializer
+class PostLikeView(APIView):
+    permission_classes = [IsAuthenticated]
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request, pk):
         try:
-            post = self.get_object()
+            post = Post.objects.get(pk=pk)
         except Post.DoesNotExist:
-            return Response({"detail": "Post not found"}, status=status.HTTP_404_NOT_FOUND)
-        post.likes_count += 1
+            return Response({'detail': 'Пост не найден.'}, status=status.HTTP_404_NOT_FOUND)
+
+        user = request.user
+
+        if PostLike.objects.filter(post=post, user=user).exists():
+            return Response({'detail': 'Вы уже поставили лайк.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        like = PostLike.objects.create(post=post, user=user)
+
+        post.likes.add(user)
+        post.likes_count = post.likes.count()
         post.save()
-        serializer = self.get_serializer(post)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+
+        serializer = PostLikeSerializer(like)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class PostUnlikeView(generics.GenericAPIView):
-    queryset = Post.objects.all()
+    permission_classes = [IsAuthenticated]
     serializer_class = PostUnlikeSerializer
+
     def post(self, request, pk):
         try:
-            post = self.get_object()
+            post = Post.objects.get(pk=pk)
         except Post.DoesNotExist:
             error_data = {
                 "detail": "Post not found",
                 "code": "404"
             }
             return Response(error_data, status=status.HTTP_404_NOT_FOUND)
-        if post.likes_count > 0:
-            post.likes_count -= 1
-            post.save()
-            return Response({"detail": "Successfully unliked", "code": "200"}, status=status.HTTP_200_OK)
-        else:
+
+        user = request.user
+
+        try:
+            post_like = PostLike.objects.get(post=post, user=user)
+        except PostLike.DoesNotExist:
             error_data = {
-                "detail": "Likes count is already 0",
+                "detail": "Not liked yet",
                 "code": "400"
             }
             return Response(error_data, status=status.HTTP_400_BAD_REQUEST)
+
+        post_like.delete()
+        post.likes_count = post.likes.count()  # обновляем количество лайков
+        post.save()
+
+        return Response({
+            "detail": "Successfully unliked",
+            "code": "200"
+        }, status=status.HTTP_200_OK)

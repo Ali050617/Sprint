@@ -50,19 +50,21 @@ class UserLogoutView(APIView):
         refresh_token = request.data.get('refresh')
         if not refresh_token:
             return Response(
-{
-                'detail': "Refresh token is required"
-            }, status=400)
-
+                {'detail': "Необходим refresh токен."},
+                status=400
+            )
         try:
             token = RefreshToken(refresh_token)
             token.blacklist()
         except TokenError:
-            return Response({
-                'detail': "Invalid token"
-            }, status=401)
-
-        return Response(status=204)
+            return Response(
+                {'detail': "Недопустимый токен."},
+                status=401
+            )
+        return Response(
+            {'detail': "Вы успешно вышли из системы."},
+            status=204
+        )
 
 
 # RESET PASSWORD
