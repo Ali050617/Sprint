@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, AuthUser
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .models import User, UserProfile
 from django.contrib.auth.tokens import default_token_generator
 
@@ -27,7 +27,6 @@ class RegisterSerializer(serializers.Serializer):
         validated_data.pop('password_confirm')
 
         user = User.objects.create_user(**validated_data)
-
         user.set_password(password)
         user.save()
 
@@ -93,15 +92,36 @@ class PasswordResetSerializer(serializers.Serializer):
 # PASSWORD-RESET-CONFIRM
 class PasswordResetConfirmSerializer(serializers.Serializer):
     token = serializers.CharField()
-    password = serializers.CharField(write_only=True)
-    password_confirm = serializers.CharField(write_only=True)
+    password = serializers.CharField(min_length=8)
+    password_confirm = serializers.CharField(min_length=8)
 
-    def validate(self, data):
-        if data['password'] != data['password_confirm']:
-            raise serializers.ValidationError({"password": "Пароли не совпадают."})
-        return data
+    def validate(self, attrs):
+        self._validate_password(attrs)
+        self._validate_token(attrs['token'])
+        return attrs
+
+    def _validate_password(self, attrs):
+        password, password_confirm = attrs['password'], attrs['password_confirm']
+
+        if password != password_confirm:
+            raise serializers.ValidationError("Пароль и подтверждение пароля не совпадают.")
+
+        if len(password) < 8 or not any(char.isalpha() for char in password):
+            raise serializers.ValidationError("Пароль должен быть не менее 8 символов и содержать хотя бы одну букву.")
+
+    def _validate_token(self, token):
+        user = self._get_user_by_token(token)
+        if not user:
+            raise serializers.ValidationError("Токен недействителен или истёк срок его действия.")
+
+    def _get_user_by_token(self, token):
+        for user in User.objects.all():
+            if default_token_generator.check_token(user, token):
+                return user
+        return None
 
 
+# USER DATA
 class UserDataSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     email = serializers.EmailField(read_only=True)

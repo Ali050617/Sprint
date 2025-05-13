@@ -7,7 +7,6 @@ from .models import User, UserProfile
 from django.utils.crypto import get_random_string
 from django.core.mail import send_mail
 from django.conf import settings
-from .utils import send_verification_email
 
 
 @receiver(post_save, sender=User)
@@ -36,13 +35,6 @@ def send_verification_email_on_create(sender, instance, created, **kwargs):
         )
 
 
-@receiver(post_save, sender=User)
-def send_email_verification_signal(sender, instance, created, **kwargs):
-    if created and not instance.is_verified:
-        instance.generate_email_token()
-        send_verification_email(instance)
-
-
 @receiver(post_delete, sender=UserProfile)
 def delete_user_image_on_delete(sender, instance, **kwargs):
     if instance.image:
@@ -66,5 +58,3 @@ def delete_old_image_on_change(sender, instance, **kwargs):
     if old_image and old_image != new_image:
         if os.path.isfile(old_image.path):
             os.remove(old_image.path)
-
-
