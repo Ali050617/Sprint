@@ -1,22 +1,25 @@
 from tokenize import TokenError
 from django.shortcuts import get_object_or_404
-from rest_framework import generics
+from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework import status
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .models import User, UserProfile
 from .paginations import FollowersListPagination, FollowingListPagination
 from .serializers import (
     RegisterSerializer,
-    CustomTokenObtainPairSerializer,
+    RefreshTokenSerializer,
     PasswordResetSerializer,
     PasswordResetConfirmSerializer,
-    UserDataSerializer, UserProfileSerializer, VerifyEmailSerializer
+    UserDataSerializer,
+    UserProfileSerializer,
+
 )
+from .tokens import send_password_reset_email, reset_password_confirm
+from .utils import reset_password_confirm
 
 
 # REGISTER
@@ -24,37 +27,14 @@ class UserRegisterViews(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = RegisterSerializer
 
-    def perform_create(self, serializer):
-        user = serializer.save()
-        user.generate_email_token()
-
-        return user
-
 
 # VERIFY EMAIL
-class VerifyEmailAPIView(generics.GenericAPIView):
-    serializer_class = VerifyEmailSerializer
-
-    def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        token = serializer.validated_data.get('token')
-        user = get_object_or_404(User, email_token=token)
-
-        if user.is_verified:
-            return Response({"detail": "Email уже подтвержден"}, status=status.HTTP_400_BAD_REQUEST)
-
-        user.is_verified = True
-        user.email_token = None
-        user.save()
-
-        return Response({"detail": "Email успешно подтвержден"}, status=status.HTTP_200_OK)
+pass
 
 
 # LOGIN
 class UserLoginView(TokenObtainPairView):
-    serializer_class = CustomTokenObtainPairSerializer
+    serializer_class = RefreshTokenSerializer
 
 
 # LOGOUT
@@ -64,7 +44,7 @@ class UserLogoutView(APIView):
     def post(self, request):
         refresh_token = request.data.get('refresh')
         if not refresh_token:
-            return Response(        # send_email(user.email, user.email_token)
+            return Response(
 {
                 'detail': "Refresh token is required"
             }, status=400)
@@ -79,38 +59,31 @@ class UserLogoutView(APIView):
 
         return Response(status=204)
 
+
 # RESET PASSWORD
 class PasswordResetView(APIView):
     def post(self, request):
         serializer = PasswordResetSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        email = serializer.validated_data['email']
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        user = User.objects.get(email=email)
-        user.generate_email_token()
+        user = User.objects.get(email=serializer.validated_data['email'])
+        send_password_reset_email(user)
+        return Response({"detail": "Токен для сброса пароля отправлен на электронную почту."}, status=status.HTTP_200_OK)
 
-        return Response({"detail": "Ссылка для сброса пароля отправлена на почту."})
 
-
-# CONFIRM RESET PASSWORD
+# RESET PASSWORD CONFIRM
 class PasswordResetConfirmView(APIView):
     def post(self, request):
         serializer = PasswordResetConfirmSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        token = serializer.validated_data['token']
-        password = serializer.validated_data['password']
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            user = User.objects.get(email_token=token)
-        except User.DoesNotExist:
-            raise ValidationError({"detail": "Неверный токен."})
-
-        user.set_password(password)
-        user.email_token = None
-        user.save()
-
-        return Response({"detail": "Пароль успешно изменён."})
+            result = reset_password_confirm(serializer.validated_data)
+            return Response(result, status=status.HTTP_200_OK)
+        except ValidationError as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 # USER
