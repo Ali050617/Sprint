@@ -2,9 +2,9 @@ from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .models import User, UserProfile
 from django.contrib.auth.tokens import default_token_generator
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 
 
+# REGISTER
 class RegisterSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     email = serializers.EmailField()
@@ -33,6 +33,30 @@ class RegisterSerializer(serializers.Serializer):
         return user
 
 
+# VERIFY-EMAIL
+class VerifyEmailSerializer(serializers.Serializer):
+    token = serializers.CharField(required=True)
+
+    def validate(self, attrs):
+        token = attrs.get('token')
+        try:
+            user = User.objects.get(email_token=token)
+        except User.DoesNotExist:
+            raise serializers.ValidationError({"token": "Недействительный или просроченный токен."})
+
+        attrs['user'] = user
+        return attrs
+
+    def save(self, **kwargs):
+        user = self.validated_data['user']
+        user.is_verified = True
+        user.is_active = True
+        user.email_token = None
+        user.save()
+        return user
+
+
+# REFRESH-TOKEN
 class RefreshTokenSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         data = super().validate(attrs)
@@ -55,7 +79,7 @@ class RefreshTokenSerializer(TokenObtainPairSerializer):
         return response_data
 
 
-# PASSWORD RESET
+# PASSWORD-RESET
 class PasswordResetSerializer(serializers.Serializer):
     email = serializers.EmailField()
 
@@ -65,7 +89,7 @@ class PasswordResetSerializer(serializers.Serializer):
         return value
 
 
-# PASSWORD RESET CONFIRM
+# PASSWORD-RESET-CONFIRM
 class PasswordResetConfirmSerializer(serializers.Serializer):
     token = serializers.CharField()
     password = serializers.CharField(min_length=8)

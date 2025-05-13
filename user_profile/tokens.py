@@ -1,25 +1,8 @@
 from django.template.loader import render_to_string
 from django.contrib.auth.tokens import default_token_generator
-
 from django.core.mail import EmailMultiAlternatives
 from rest_framework.exceptions import ValidationError
 from .models import User
-
-
-# def send_verification_email(user):
-#     if not user.verification_token:
-#         return
-#
-#     message = f'Please verify your email using this token:{user.verification_token}'
-#
-#
-#     send_mail(
-#         subject='Email Verification',
-#         message=message,
-#         from_email=settings.EMAIL_HOST_USER,
-#         recipient_list=[user.email],
-#         fail_silently=False
-#     )
 
 
 def generate_reset_token(user):
@@ -58,4 +41,3 @@ def reset_password_confirm(data):
     user.set_password(password)
     user.save()
     return {"detail": "Пароль успешно обновлён."}
-

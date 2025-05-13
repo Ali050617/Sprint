@@ -9,17 +9,17 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .models import User, UserProfile
 from .paginations import FollowersListPagination, FollowingListPagination
+from .tokens import send_password_reset_email, reset_password_confirm
+from .utils import reset_password_confirm
 from .serializers import (
     RegisterSerializer,
     RefreshTokenSerializer,
     PasswordResetSerializer,
     PasswordResetConfirmSerializer,
     UserDataSerializer,
-    UserProfileSerializer,
+    UserProfileSerializer, VerifyEmailSerializer,
 
 )
-from .tokens import send_password_reset_email, reset_password_confirm
-from .utils import reset_password_confirm
 
 
 # REGISTER
@@ -29,7 +29,12 @@ class UserRegisterViews(generics.CreateAPIView):
 
 
 # VERIFY EMAIL
-pass
+class EmailVerificationView(APIView):
+    def post(self, request):
+        serializer = VerifyEmailSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({"detail": "Email успешно подтвержден."}, status=status.HTTP_200_OK)
 
 
 # LOGIN
