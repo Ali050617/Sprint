@@ -119,3 +119,5 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'samandarnayimjonov@gmail.com'
 EMAIL_HOST_PASSWORD = 'clcqdwbnklubwnsq'
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+
