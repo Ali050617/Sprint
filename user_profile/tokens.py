@@ -58,4 +58,3 @@ def reset_password_confirm(data):
     user.set_password(password)
     user.save()
     return {"detail": "Пароль успешно обновлён."}
-
