@@ -17,14 +17,12 @@ def create_user_profile(sender, instance, created, **kwargs):
 @receiver(post_save, sender=User)
 def send_verification_email_on_create(sender, instance, created, **kwargs):
     if created and not instance.is_verified:
-        token = get_random_string(64)
-        instance.email_token = token
+        instance.email_token = instance.email_token or get_random_string(64)
         instance.save()
 
-        message = f"Пожалуйста, подтвердите вашу почту, используя этот токен:\n\n{token}"
         send_mail(
             subject='Подтверждение электронной почты',
-            message=message,
+            message=f"Пожалуйста, подтвердите вашу почту, используя этот токен:\n\n{instance.email_token}",
             from_email=settings.EMAIL_HOST_USER,
             recipient_list=[instance.email],
             fail_silently=False,

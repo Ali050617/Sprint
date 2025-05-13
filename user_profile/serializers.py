@@ -35,25 +35,26 @@ class RegisterSerializer(serializers.Serializer):
 
 # VERIFY-EMAIL
 class VerifyEmailSerializer(serializers.Serializer):
-    token = serializers.CharField()
+    token = serializers.CharField(required=True)
 
-    def validate_token(self, value):
-        if not value:
-            raise serializers.ValidationError("Токен обязателен.")
-        return value
-
-    def save(self, **kwargs):
-        token = self.validated_data['token']
+    def validate(self, attrs):
+        token = attrs.get('token')
         try:
             user = User.objects.get(email_token=token)
         except User.DoesNotExist:
-            raise serializers.ValidationError("Недействительный или просроченный токен.")
+            raise serializers.ValidationError({"token": "Недействительный или просроченный токен."})
 
+        attrs['user'] = user
+        return attrs
+
+    def save(self, **kwargs):
+        user = self.validated_data['user']
         user.is_verified = True
         user.is_active = True
         user.email_token = None
         user.save()
         return user
+
 
 # REFRESH-TOKEN
 class RefreshTokenSerializer(TokenObtainPairSerializer):
