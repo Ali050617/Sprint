@@ -20,12 +20,15 @@ from .serializers import (
     UserProfileSerializer, VerifyEmailSerializer,
 
 )
+from .tokens import send_password_reset_email, reset_password_confirm
+from .utils import reset_password_confirm
 
 
 # REGISTER
 class UserRegisterViews(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = RegisterSerializer
+
 
 # VERIFY EMAIL
 class EmailVerificationView(APIView):
@@ -34,6 +37,7 @@ class EmailVerificationView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({"detail": "Email успешно подтвержден."}, status=status.HTTP_200_OK)
+
 
 # LOGIN
 class UserLoginView(TokenObtainPairView):
@@ -61,6 +65,7 @@ class UserLogoutView(APIView):
             }, status=401)
 
         return Response(status=204)
+
 
 # RESET PASSWORD
 class PasswordResetView(APIView):
