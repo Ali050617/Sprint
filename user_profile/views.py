@@ -27,7 +27,6 @@ class UserRegisterViews(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = RegisterSerializer
 
-
 # VERIFY EMAIL
 class EmailVerificationView(APIView):
     def post(self, request):
@@ -35,7 +34,6 @@ class EmailVerificationView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({"detail": "Email успешно подтвержден."}, status=status.HTTP_200_OK)
-
 
 # LOGIN
 class UserLoginView(TokenObtainPairView):
@@ -63,7 +61,6 @@ class UserLogoutView(APIView):
             }, status=401)
 
         return Response(status=204)
-
 
 # RESET PASSWORD
 class PasswordResetView(APIView):
