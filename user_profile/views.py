@@ -25,10 +25,8 @@ class UserRegisterViews(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = RegisterSerializer
 
-
 # VERIFY EMAIL
 pass
-
 
 # LOGIN
 class UserLoginView(TokenObtainPairView):
@@ -56,7 +54,6 @@ class UserLogoutView(APIView):
             }, status=401)
 
         return Response(status=204)
-
 
 # RESET PASSWORD
 class PasswordResetView(APIView):
