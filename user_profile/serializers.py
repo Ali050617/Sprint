@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, AuthUser
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .models import User, UserProfile
 
 
@@ -25,15 +25,10 @@ class RegisterSerializer(serializers.Serializer):
         validated_data.pop('password_confirm')
 
         user = User.objects.create_user(**validated_data)
-
         user.set_password(password)
         user.save()
 
         return user
-
-
-class VerifyEmailSerializer(serializers.Serializer):
-    token = serializers.CharField()
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
