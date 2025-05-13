@@ -5,10 +5,10 @@ from posts.models import Post
 from comments.models import Comment
 from user_profile.models import UserProfile
 from posts.serializers import PostSerializer
-from comments.serializers import CommentSerializer, SearchCommentSerializer
 from user_profile.serializers import UserProfileSerializer
 from .paginations import SearchPagination
 import logging
+from .serializers import SearchCommentSerializer
 
 logger = logging.getLogger(__name__)
 
