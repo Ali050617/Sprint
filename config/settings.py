@@ -1,11 +1,17 @@
 from pathlib import Path
 from datetime import timedelta
 
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-*m^+p_=+7^$ov&@!4f7tkz)$mfoxm!&k(ptun=0!xecn!7^u3y'
-DEBUG = True
-ALLOWED_HOSTS = []
+
+DEBUG = False
+
+ALLOWED_HOSTS = ['127.0.0.1', '.vercel.app', 'domain_name.uz']
+
+AUTH_USER_MODEL = 'user_profile.User'
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -52,7 +58,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'config.wsgi.application'
+WSGI_APPLICATION = 'config.wsgi.app'
 
 DATABASES = {
     'default': {
@@ -74,6 +80,7 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = 'static/'
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
@@ -84,7 +91,6 @@ REST_FRAMEWORK = {
     ],
 }
 
-AUTH_USER_MODEL = 'user_profile.User'
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=7),
