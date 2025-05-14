@@ -8,7 +8,7 @@ SECRET_KEY = 'django-insecure-*m^+p_=+7^$ov&@!4f7tkz)$mfoxm!&k(ptun=0!xecn!7^u3y
 
 DEBUG = False
 
-ALLOWED_HOSTS = ['127.0.0.1', '.vercel.app', 'domain_name.uz']
+ALLOWED_HOSTS = ['127.0.0.1', '.vercel.app', 'sprintt.uz']
 
 AUTH_USER_MODEL = 'user_profile.User'
 
