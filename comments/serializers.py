@@ -64,3 +64,4 @@ class CommentLikeSerializer(serializers.ModelSerializer):
 class CommentUnlikeSerializer(serializers.Serializer):
     detail = serializers.CharField()
     code = serializers.CharField()
+
