@@ -91,6 +91,10 @@ REST_FRAMEWORK = {
     ],
 }
 
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [BASE_DIR / 'static']
+STATIC_ROOT = str(BASE_DIR / 'staticfiles')
+
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=7),
@@ -125,5 +129,6 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'samandarnayimjonov@gmail.com'
 EMAIL_HOST_PASSWORD = 'clcqdwbnklubwnsq'
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
 
 
