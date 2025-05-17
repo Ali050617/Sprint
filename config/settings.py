@@ -80,7 +80,6 @@ TIME_ZONE = 'Asia/Tashkent'
 USE_I18N = True
 USE_TZ = True
 
-STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -130,6 +129,5 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'samandarnayimjonov@gmail.com'
 EMAIL_HOST_PASSWORD = 'etgqzacnvxnjciba'
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-
 
 
