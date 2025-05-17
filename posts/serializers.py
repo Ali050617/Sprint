@@ -12,6 +12,7 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id', 'email', 'username', 'is_active', 'is_staff',
                   'is_verified', 'date_joined', 'role']
+        ref_name = "PostUserSerializer"
 
     def get_role(self, obj):
         if obj.is_superuser:
@@ -35,6 +36,7 @@ class PostSerializer(serializers.ModelSerializer):
                   'updated_at', 'is_active', 'likes_count', 'comments_count']
         read_only_fields = ['author', 'created_at', 'updated_at',
                             'likes_count', 'comments_count']
+        ref_name = "PostPostSerializer"
 
     def get_likes_count(self, obj):
         return obj.likes.count()

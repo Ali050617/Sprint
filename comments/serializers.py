@@ -15,6 +15,7 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id', 'email', 'username', 'is_active', 'is_staff',
                   'date_joined', 'is_verified', 'role']
+        ref_name = "CommentUserSerializer"
 
     def get_is_verified(self, obj):
         return True
@@ -32,6 +33,7 @@ class PostSerializer(serializers.ModelSerializer):
         model = Post
         fields = ['id', 'title', 'content', 'author', 'created_at',
                   'updated_at', 'is_active', 'likes_count', 'comments_count', ]
+        ref_name = "CommentPostSerializer"
 
     def get_likes_count(self, obj):
         return obj.likes.count()

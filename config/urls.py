@@ -24,9 +24,14 @@ from django.conf.urls.static import static
 
 schema_view = get_schema_view(
     openapi.Info(
-        title="API Dokumentatsiyasi",
+        title="Sprint API",
         default_version='v1',
-        description="API dokumentatsiyasi tavsifi",
+        description=(
+            "Bu loyiha Django REST Framework asosida qurilgan bo‘lib, foydalanuvchi \n"
+            " autentifikatsiyasi, kontent boshqaruvi, profil va ta'sir  \n"
+            "tizimlari hamda bildirishnoma va qidiruv funksiyalarini \n"
+            " o‘z ichiga oladi."
+        ),
         terms_of_service="https://www.example.com/terms/",
         contact=openapi.Contact(email="contact@example.com"),
         license=openapi.License(name="BSD License"),
@@ -47,5 +52,4 @@ urlpatterns = [
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
-
 ]
